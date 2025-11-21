@@ -1,0 +1,229 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Заголовок -->
+    <h2 class="mb-5 fw-bold text-dark text-uppercase" style="letter-spacing: 1px;">O'qituvchilar boshqaruvi</h2>
+
+    <!-- Форма добавления учителя -->
+    <div class="card shadow-lg rounded-4 mb-5 p-5 bg-white teacher-form-card">
+        <h5 class="fw-semibold mb-4 text-secondary">Yangi o'qituvchi qo'shish</h5>
+        <form method="POST" enctype="multipart/form-data" class="teacher-form row g-3">
+            {% csrf_token %}
+
+            <!-- Имя -->
+            <div class="form-group col-md-6">
+                <input type="text" name="name" id="id_name" placeholder=" " required>
+                <label for="id_name">Ism</label>
+            </div>
+
+            <!-- Фамилия -->
+            <div class="form-group col-md-6">
+                <input type="text" name="surname" id="id_surname" placeholder=" " required>
+                <label for="id_surname">Familiya</label>
+            </div>
+
+            <!-- Фото -->
+            <div class="form-group col-md-6">
+                <input type="file" name="image" id="id_image">
+                <label for="id_image">Rasm</label>
+            </div>
+
+            <!-- Категория -->
+            <div class="form-group col-md-6">
+                <input type="text" name="category" id="id_category" placeholder=" ">
+                <label for="id_category">Bo'lim</label>
+            </div>
+
+            <!-- Лавозим -->
+            <div class="form-group col-12">
+                <input type="text" name="position" id="id_position" placeholder=" ">
+                <label for="id_position">Lavozim</label>
+            </div>
+
+            <!-- Submit -->
+            <div class="col-12 text-end mt-4">
+                <button type="submit" class="btn btn-gradient">Qo'shish</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Список учителей -->
+    <div class="teacher-cards d-flex flex-wrap gap-4">
+        {% for teacher in teachers %}
+        <div class="card shadow-sm teacher-card p-3 flex-fill" style="min-width: 280px; max-width: 350px;">
+            {% if teacher.image %}
+            <div class="teacher-image mb-3">
+                <img src="{{ teacher.image.url }}" class="w-100 rounded" alt="Teacher photo">
+            </div>
+            {% endif %}
+            <h6 class="fw-bold mb-1">{{ teacher.name }} {{ teacher.surname }}</h6>
+            <p class="text-muted mb-1">Bo'lim: {{ teacher.category|default:"Yo'q" }}</p>
+            <p class="text-muted mb-3">Lavozim: {{ teacher.position|default:"Ko'rsatilmagan" }}</p>
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'admin_edit_teacher' teacher.id %}" class="btn btn-outline-secondary btn-sm"
+                    title="Tahrirlash">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'admin_delete_teacher' teacher.id %}" class="btn btn-outline-danger btn-sm"
+                    title="O'chirish" onclick="return confirm('Ushbu o\'qituvchini o\'chirmoqchimisiz?');">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center w-100">O'qituvchilar mavjud emas</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<style>
+    body {
+        background-color: #f4f5f7;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        color: #212529;
+    }
+
+    /* Форма с плавающими лейблами */
+    .teacher-form-card {
+        transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .teacher-form-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .teacher-form .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .teacher-form input,
+    .teacher-form textarea,
+    .teacher-form select {
+        width: 100%;
+        padding: 0.85rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.35rem;
+        background: #fff;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .teacher-form input:focus,
+    .teacher-form textarea:focus,
+    .teacher-form select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        outline: none;
+    }
+
+    .teacher-form label {
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        background: #fff;
+        padding: 0 0.25rem;
+        color: #6c757d;
+        pointer-events: none;
+        transition: all 0.3s;
+    }
+
+    .teacher-form input:focus+label,
+    .teacher-form input:not(:placeholder-shown)+label,
+    .teacher-form textarea:focus+label,
+    .teacher-form textarea:not(:placeholder-shown)+label,
+    .teacher-form select:focus+label {
+        top: -0.6rem;
+        left: 0.6rem;
+        font-size: 0.75rem;
+        color: #0d6efd;
+    }
+
+    /* Кнопка */
+    .btn-gradient {
+        background: linear-gradient(120deg, #0d6efd, #6c757d);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.35rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(120deg, #6c757d, #0d6efd);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Учителя карточки */
+    .teacher-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .teacher-card {
+        border-radius: 0.45rem;
+        transition: transform 0.2s, box-shadow 0.3s;
+        background: #fff;
+    }
+
+    .teacher-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .teacher-image img {
+        object-fit: cover;
+        height: 160px;
+    }
+
+    /* Кнопки действий */
+    .btn-sm {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    }
+
+    /* Заголовки */
+    h2 {
+        font-size: 2rem;
+    }
+
+    h5 {
+        font-size: 1.15rem;
+        color: #495057;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4 fw-bold text-dark">Maktab haqida ma'lumot</h2>
+
+    <div class="card shadow-sm border-0 rounded-4 p-4 bg-white">
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const phoneInput = document.querySelector('input[name="phone"]');
+                    if (phoneInput) {
+                        phoneInput.placeholder = "+998 90 123 45 67";
+                        phoneInput.pattern = "\\+998\\s\\d{2}\\s\\d{3}\\s\\d{2}\\s\\d{2}";
+                        phoneInput.title = "Telefon raqam formati: +998 90 123 45 67";
+                    }
+                });
+            </script>
+
+            <div class="col-12 text-end mt-3">
+                <button type="submit" class="btn btn-success btn-sm">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: "Segoe UI", Roboto, sans-serif;
+    }
+
+    .card {
+        max-width: 600px;
+        margin: auto;
+    }
+
+    form input,
+    form select,
+    form textarea {
+        border-radius: 0.35rem;
+        border: 1px solid #ced4da;
+        padding: 0.5rem;
+        width: 100%;
+    }
+
+    form button {
+        min-width: 100px;
+    }
+</style>
+{% endblock %}

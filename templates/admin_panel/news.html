@@ -1,0 +1,246 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Заголовок -->
+    <h2 class="mb-5 fw-bold text-dark text-uppercase" style="letter-spacing: 1px;">Yangiliklar boshqaruvi</h2>
+
+    <!-- Форма добавления новости -->
+    <div class="card shadow-lg rounded-4 mb-5 p-5 bg-white news-form-card">
+        <h5 class="fw-semibold mb-4 text-secondary">Yangilik qo'shish</h5>
+        <form method="POST" enctype="multipart/form-data" class="news-form">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="form-group">
+                <input type="text" name="title" id="id_title" placeholder=" " required>
+                <label for="id_title">Sarlavha</label>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <textarea name="description" id="id_description" rows="4" placeholder=" " required></textarea>
+                <label for="id_description">Tavsif</label>
+            </div>
+
+            <!-- Image -->
+            <div class="form-group">
+                <input type="file" name="image" id="id_image">
+                <label for="id_image">Rasm</label>
+            </div>
+
+            <!-- Submit -->
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-gradient">Qo'shish</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Список новостей -->
+    <div class="news-cards d-flex flex-wrap gap-4">
+        {% for news in news_list %}
+        <div class="card shadow-sm news-card p-3 flex-fill" style="min-width: 280px; max-width: 350px;">
+            {% if news.image %}
+            <div class="news-image mb-3">
+                <img src="{{ news.image.url }}" class="w-100 rounded" alt="News image">
+            </div>
+            {% endif %}
+            <h6 class="fw-bold mb-2">{{ news.title }}</h6>
+            <p class="text-muted mb-3">{{ news.description|truncatechars:80 }}</p>
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'admin_edit_news' news.id %}" class="btn btn-outline-secondary btn-sm"
+                    title="Tahrirlash">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'admin_delete_news' news.id %}" class="btn btn-outline-danger btn-sm" title="O'chirish"
+                    onclick="return confirm('Ushbu yangilikni o\'chirmoqchimisiz?');">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center w-100">Yangiliklar mavjud emas</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<style>
+    body {
+        background-color: #f4f5f7;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        color: #212529;
+    }
+
+    /* Форма с плавающими лейблами */
+    .news-form-card {
+        position: relative;
+        transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .news-form-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .news-form .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .news-form input,
+    .news-form textarea {
+        width: 100%;
+        padding: 0.85rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.35rem;
+        background: #fff;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .news-form input:focus,
+    .news-form textarea:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        outline: none;
+    }
+
+    .news-form label {
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        background: #fff;
+        padding: 0 0.25rem;
+        color: #6c757d;
+        pointer-events: none;
+        transition: all 0.3s;
+    }
+
+    .news-form input:focus+label,
+    .news-form input:not(:placeholder-shown)+label,
+    .news-form textarea:focus+label,
+    .news-form textarea:not(:placeholder-shown)+label {
+        top: -0.6rem;
+        left: 0.6rem;
+        font-size: 0.75rem;
+        color: #0d6efd;
+    }
+
+    /* Кнопка */
+    .btn-gradient {
+        background: linear-gradient(120deg, #0d6efd, #6c757d);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.35rem;
+        font-weight: 500;
+        transition: opacity 0.2s;
+    }
+
+    .btn-gradient:hover {
+        opacity: 0.9;
+    }
+
+    /* Новости карточки */
+    .news-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .news-card {
+        border-radius: 0.45rem;
+        transition: transform 0.2s, box-shadow 0.3s;
+        background: #fff;
+    }
+
+    .news-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .news-image img {
+        object-fit: cover;
+        height: 160px;
+    }
+
+    /* Кнопки действий */
+    /* Кнопка с градиентом */
+    .btn-gradient {
+        background: linear-gradient(120deg, #0d6efd, #6c757d);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.35rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    /* Hover эффект для кнопки */
+    .btn-gradient:hover {
+        background: linear-gradient(120deg, #6c757d, #0d6efd);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        opacity: 1;
+    }
+
+    /* Кнопки действий на карточках */
+    .btn-outline-danger,
+    .btn-outline-secondary {
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    }
+
+
+    .btn-sm {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+    }
+
+    /* Заголовки */
+    h2 {
+        font-size: 2rem;
+    }
+
+    h5 {
+        font-size: 1.15rem;
+        color: #495057;
+    }
+</style>
+{% endblock %}

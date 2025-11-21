@@ -1,0 +1,129 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-5 fw-bold text-dark text-uppercase" style="letter-spacing: 1px;">O'qituvchi tahrirlash</h2>
+
+    <div class="card shadow-lg rounded-4 p-5 bg-white edit-teacher-card">
+        <form method="POST" enctype="multipart/form-data" class="teacher-edit-form row g-3">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="form-group col-12">
+                {{ field }}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="col-12 text-end mt-4 d-flex justify-content-end gap-2">
+                <a href="{% url 'admin_teachers' %}" class="btn btn-outline-secondary">Orqaga</a>
+                <button type="submit" class="btn btn-gradient">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f4f5f7;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        color: #212529;
+    }
+
+    /* Карточка формы */
+    .edit-teacher-card {
+        max-width: 600px;
+        margin: auto;
+        transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .edit-teacher-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Плавающие лейблы */
+    .teacher-edit-form .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .teacher-edit-form input,
+    .teacher-edit-form textarea,
+    .teacher-edit-form select {
+        width: 100%;
+        padding: 0.85rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.35rem;
+        background: #fff;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .teacher-edit-form input:focus,
+    .teacher-edit-form textarea:focus,
+    .teacher-edit-form select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        outline: none;
+    }
+
+    .teacher-edit-form label {
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        background: #fff;
+        padding: 0 0.25rem;
+        color: #6c757d;
+        pointer-events: none;
+        transition: all 0.3s;
+    }
+
+    .teacher-edit-form input:focus+label,
+    .teacher-edit-form input:not(:placeholder-shown)+label,
+    .teacher-edit-form textarea:focus+label,
+    .teacher-edit-form textarea:not(:placeholder-shown)+label,
+    .teacher-edit-form select:focus+label {
+        top: -0.6rem;
+        left: 0.6rem;
+        font-size: 0.75rem;
+        color: #0d6efd;
+    }
+
+    /* Кнопки */
+    .btn-gradient {
+        background: linear-gradient(120deg, #0d6efd, #6c757d);
+        color: #fff;
+        border: none;
+        padding: 0.55rem 1rem;
+        border-radius: 0.35rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(120deg, #6c757d, #0d6efd);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+    }
+</style>
+
+{% endblock %}
