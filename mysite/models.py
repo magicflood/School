@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 
+
 phone_validator = RegexValidator(
     regex=r'^\+?\d[\d\s]{6,20}$',
     message="Raqam faqat '+' belgisi, raqam va bo'shliqlardan iborat bo'lishi kerak."

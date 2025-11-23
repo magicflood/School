@@ -7,6 +7,10 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.db.models import Case, When, Value, IntegerField
 
+default_categories = ["Rahbariyat", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
+
+for cat_name in default_categories:
+    Category.objects.get_or_create(name=cat_name)
 
 def send_contact(request):
     if request.method == "POST": 
@@ -91,12 +95,12 @@ def admin_school_info(request):
 
 def admin_teachers(request):
     teachers = Teacher.objects.select_related('category').all()
-
     form = TeacherForm()
-
+    categories = Category.objects.all()  # Добавляем категории
     return render(request, 'admin_panel/teachers.html', {
         'teachers': teachers,
-        'form': form
+        'form': form,
+        'categories': categories,  # <-- сюда
     })
 
 # def admin_categories(request):
@@ -105,13 +109,24 @@ def admin_teachers(request):
 #     return render(request, 'admin_panel/category.html', {'category': category, 'form': form})
 
 def admin_add_teacher(request):
+    teachers = Teacher.objects.select_related('category').all()
+    categories = Category.objects.all()
+
     if request.method == 'POST':
         form = TeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "O'qituvchi qo'shildi!")
             return redirect('admin_teachers')
+        else:
+            return render(request, 'admin_panel/teachers.html', {
+                'teachers': teachers,
+                'form': form,
+                'categories': categories,
+            })
+
     return redirect('admin_teachers')
+
 
 def admin_edit_teacher(request, teacher_id):
     teacher = Teacher.objects.filter(id=teacher_id).first()

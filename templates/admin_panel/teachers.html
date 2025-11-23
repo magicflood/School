@@ -8,8 +8,22 @@
     <!-- Форма добавления учителя -->
     <div class="card shadow-lg rounded-4 mb-5 p-5 bg-white teacher-form-card">
         <h5 class="fw-semibold mb-4 text-secondary">Yangi o'qituvchi qo'shish</h5>
-        <form method="POST" enctype="multipart/form-data" class="teacher-form row g-3">
+        <form method="POST" action="{% url 'admin_add_teacher' %}" enctype="multipart/form-data"
+            class="teacher-form row g-3">
             {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="alert alert-danger w-100">
+                {% for field in form %}
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             <!-- Имя -->
             <div class="form-group col-md-6">
@@ -29,11 +43,16 @@
                 <label for="id_image">Rasm</label>
             </div>
 
-            <!-- Категория -->
             <div class="form-group col-md-6">
-                <input type="text" name="category" id="id_category" placeholder=" ">
+                <select name="category" id="id_category" required>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+
                 <label for="id_category">Bo'lim</label>
             </div>
+
 
             <!-- Лавозим -->
             <div class="form-group col-12">
@@ -53,10 +72,9 @@
         {% for teacher in teachers %}
         <div class="card shadow-sm teacher-card p-3 flex-fill" style="min-width: 280px; max-width: 350px;">
             {% if teacher.image %}
-            <div class="teacher-image mb-3">
-                <img src="{{ teacher.image.url }}" class="w-100 rounded" alt="Teacher photo">
-            </div>
+            <img src="{{ teacher.image.url }}" class="w-100 rounded" alt="Teacher photo">
             {% endif %}
+
             <h6 class="fw-bold mb-1">{{ teacher.name }} {{ teacher.surname }}</h6>
             <p class="text-muted mb-1">Bo'lim: {{ teacher.category|default:"Yo'q" }}</p>
             <p class="text-muted mb-3">Lavozim: {{ teacher.position|default:"Ko'rsatilmagan" }}</p>
