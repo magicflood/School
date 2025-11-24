@@ -25,7 +25,6 @@ class Teacher(models.Model):
         related_name='teachers',
         verbose_name="Ustozlar guruhi"
     )
-    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="Lavozim")
 
     def __str__(self):
         return f"{self.name} {self.surname}"

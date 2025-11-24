@@ -50,14 +50,7 @@
                     {% endfor %}
                 </select>
 
-                <label for="id_category">Bo'lim</label>
-            </div>
-
-
-            <!-- Лавозим -->
-            <div class="form-group col-12">
-                <input type="text" name="position" id="id_position" placeholder=" ">
-                <label for="id_position">Lavozim</label>
+                <label for="id_category">Lavozim</label>
             </div>
 
             <!-- Submit -->
@@ -72,12 +65,10 @@
         {% for teacher in teachers %}
         <div class="card shadow-sm teacher-card p-3 flex-fill" style="min-width: 280px; max-width: 350px;">
             {% if teacher.image %}
-            <img src="{{ teacher.image.url }}" style="height: 400px;" class="w-100 rounded" alt="Teacher photo">
+            <img src="{{ teacher.image.url }}" style="height: 425px;" class="w-100 rounded" alt="Teacher photo">
             {% endif %}
-
             <h6 class="fw-bold mb-1">{{ teacher.name }} {{ teacher.surname }}</h6>
-            <p class="text-muted mb-1">Bo'lim: {{ teacher.category|default:"Yo'q" }}</p>
-            <p class="text-muted mb-3">Lavozim: {{ teacher.position|default:"Ko'rsatilmagan" }}</p>
+            <p class="text-muted mb-1">Lavozim: {{ teacher.category|default:"Yo'q" }}</p>
             <div class="d-flex justify-content-end gap-2">
                 <a href="{% url 'admin_edit_teacher' teacher.id %}" class="btn btn-outline-secondary btn-sm"
                     title="Tahrirlash">

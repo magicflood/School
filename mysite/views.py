@@ -2,12 +2,12 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib import messages
 from .models import Teacher, SchoolInfo, News, Category
-from .forms import SchoolInfoForm, TeacherForm, NewsForm, CategoryForm
+from .forms import SchoolInfoForm, TeacherForm, NewsForm
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.db.models import Case, When, Value, IntegerField
 
-default_categories = ["Rahbariyat", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
+default_categories = ["Rahbariyat", "Maktab direktori", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
 
 for cat_name in default_categories:
     Category.objects.get_or_create(name=cat_name)
@@ -30,6 +30,7 @@ def send_contact(request):
         return JsonResponse({"status": "ok"})
     
     return JsonResponse({"status": "error"}, status=400)
+from django.db.models import Q
 
 class HomeView(TemplateView):
     template_name = 'index.html'
@@ -37,18 +38,14 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Сначала пытаемся взять учителей категории Rahbariyat
-        rahbariyat_category = Category.objects.filter(name="Rahbariyat").first()
-        teachers = []
+        priority_categories = ["Rahbariyat", "Maktab direktori"]
 
-        if rahbariyat_category:
-            rahbariyat_teachers = list(Teacher.objects.filter(category=rahbariyat_category))
-            teachers.extend(rahbariyat_teachers[:4])  # берем максимум 4
-       
-        # Если после этого меньше 4, дополняем другими учителями
+        teachers = list(
+            Teacher.objects.filter(category__name__in=priority_categories)[:4]
+        )
+
         remaining = 4 - len(teachers)
         if remaining > 0:
-            # Берем всех учителей, кроме уже выбранных
             other_teachers = Teacher.objects.exclude(id__in=[t.id for t in teachers])[:remaining]
             teachers.extend(other_teachers)
 
@@ -56,6 +53,7 @@ class HomeView(TemplateView):
         context['news'] = News.objects.order_by('-created_at')[:3]
         context['info'] = SchoolInfo.objects.first()
         return context
+
 
 def news_detail(request, pk):
     news = News.objects.filter(id=pk).first()
@@ -191,10 +189,9 @@ def news_view(request):
     })
 
 def teachers_view(request):
-    CATEGORY_ORDER = ["Rahbariyat", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
+    CATEGORY_ORDER = ["Maktab direktori", "Rahbariyat", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
 
     cases = [When(name=name, then=Value(index)) for index, name in enumerate(CATEGORY_ORDER)]
-
     categories = Category.objects.annotate(
         custom_order=Case(
             *cases,
@@ -204,17 +201,13 @@ def teachers_view(request):
     ).prefetch_related('teachers').order_by('custom_order')
 
     teachers_grouped = []
-
     for category in categories:
         teachers_in_category = category.teachers.all()
-
-        if not teachers_in_category.exists():
-            continue  
-
-        teachers_grouped.append({
-            'category': category,
-            'teachers': teachers_in_category
-        })
+        if teachers_in_category.exists():
+            teachers_grouped.append({
+                'category': category,
+                'teachers': teachers_in_category
+            })
 
     return render(request, 'teachers_list.html', {
         'teachers_grouped': teachers_grouped,

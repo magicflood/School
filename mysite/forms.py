@@ -9,7 +9,7 @@ class SchoolInfoForm(forms.ModelForm):
 class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
-        fields = ['name', 'position', 'surname', 'image', 'category']
+        fields = ['name', 'surname', 'image', 'category']
 
 class CategoryForm(forms.ModelForm):
     class Meta:
