@@ -100,7 +100,7 @@ def admin_teachers(request):
     return render(request, 'admin_panel/teachers.html', {
         'teachers': teachers,
         'form': form,
-        'categories': categories,  # <-- сюда
+        'categories': categories,
     })
 
 # def admin_categories(request):

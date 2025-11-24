@@ -8,7 +8,7 @@
     <!-- Форма добавления новости -->
     <div class="card shadow-lg rounded-4 mb-5 p-5 bg-white news-form-card">
         <h5 class="fw-semibold mb-4 text-secondary">Yangilik qo'shish</h5>
-        <form method="POST" enctype="multipart/form-data" class="news-form">
+        <form method="POST" action="{% url 'admin_add_news' %}" enctype="multipart/form-data" class="news-form">
             {% csrf_token %}
 
             <!-- Title -->

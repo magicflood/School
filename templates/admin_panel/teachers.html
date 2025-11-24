@@ -27,13 +27,13 @@
 
             <!-- Имя -->
             <div class="form-group col-md-6">
-                <input type="text" name="name" id="id_name" placeholder=" " required>
+                <input type="text" name="name" id="id_name" placeholder="" required>
                 <label for="id_name">Ism</label>
             </div>
 
             <!-- Фамилия -->
             <div class="form-group col-md-6">
-                <input type="text" name="surname" id="id_surname" placeholder=" " required>
+                <input type="text" name="surname" id="id_surname" placeholder="" required>
                 <label for="id_surname">Familiya</label>
             </div>
 
@@ -72,7 +72,7 @@
         {% for teacher in teachers %}
         <div class="card shadow-sm teacher-card p-3 flex-fill" style="min-width: 280px; max-width: 350px;">
             {% if teacher.image %}
-            <img src="{{ teacher.image.url }}" class="w-100 rounded" alt="Teacher photo">
+            <img src="{{ teacher.image.url }}" style="height: 400px;" class="w-100 rounded" alt="Teacher photo">
             {% endif %}
 
             <h6 class="fw-bold mb-1">{{ teacher.name }} {{ teacher.surname }}</h6>
