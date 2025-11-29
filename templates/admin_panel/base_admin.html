@@ -120,11 +120,19 @@
         <div class="sidebar d-flex flex-column">
             <h4>Admin Panel</h4>
             <ul class="nav flex-column mt-3">
-                <li class="nav-item"><a href="{% url 'admin_dashboard' %}" class="nav-link">Bosh sahifa</a></li>
+                <li class="nav-item"><a href="{% url 'admin_dashboard' %}" class="nav-link">Boshqaruv Paneli</a></li>
                 <li class="nav-item"><a href="{% url 'admin_school_info' %}" class="nav-link">Maktab</a></li>
                 <li class="nav-item"><a href="{% url 'admin_teachers' %}" class="nav-link">O'qituvchilar</a></li>
                 <li class="nav-item"><a href="{% url 'admin_news' %}" class="nav-link">Yangiliklar</a></li>
+
+                <li class="nav-item">
+                    <a href="/" class="nav-link">
+                        <i class="bi bi-house-door-fill"></i> Bosh sahifa
+                    </a>
+                </li>
+
             </ul>
+
         </div>
 
         <!-- Content -->

@@ -1,59 +1,44 @@
 {% extends 'admin_panel/base_admin.html' %}
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-5">
 
-    <h1 class="mb-4 fw-bold text-dark text-center">Boshqaruv Paneli</h1>
+    <h1 class="mb-5 fw-bold text-dark text-center display-5">Boshqaruv Paneli</h1>
 
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
 
         <!-- O'qituvchilar -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 hover-card p-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3 text-primary fs-2">
-                        <i class="bi bi-person-lines-fill"></i>
-                    </div>
-                    <div>
-                        <h6 class="text-secondary mb-1">O'qituvchilar</h6>
-                    </div>
+            <div class="card hover-card shadow-lg border-0 p-4 text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="bi bi-person-lines-fill"></i>
                 </div>
-                <div class="mt-3 text-end">
-                    <a href="{% url 'admin_teachers' %}" class="btn btn-sm btn-outline-primary">Boshqarish</a>
-                </div>
+                <h5 class="fw-semibold mb-2">O'qituvchilar</h5>
+                <p class="text-muted mb-3">Barcha o'qituvchilarni boshqarish</p>
+                <a href="{% url 'admin_teachers' %}" class="btn btn-primary btn-sm">Boshqarish</a>
             </div>
         </div>
 
         <!-- Yangiliklar -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 hover-card p-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3 text-success fs-2">
-                        <i class="bi bi-newspaper"></i>
-                    </div>
-                    <div>
-                        <h6 class="text-secondary mb-1">Yangiliklar</h6>
-                    </div>
+            <div class="card hover-card shadow-lg border-0 p-4 text-center">
+                <div class="icon-wrapper mb-3 text-success">
+                    <i class="bi bi-newspaper"></i>
                 </div>
-                <div class="mt-3 text-end">
-                    <a href="{% url 'admin_news' %}" class="btn btn-sm btn-outline-success">Boshqarish</a>
-                </div>
+                <h5 class="fw-semibold mb-2">Yangiliklar</h5>
+                <p class="text-muted mb-3">Yangiliklar qo'shish va tahrirlash</p>
+                <a href="{% url 'admin_news' %}" class="btn btn-success btn-sm">Boshqarish</a>
             </div>
         </div>
 
         <!-- Maktab -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 hover-card p-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3 text-warning fs-2">
-                        <i class="bi bi-building"></i>
-                    </div>
-                    <div>
-                        <h6 class="text-secondary mb-1">Maktab</h6>
-                    </div>
+            <div class="card hover-card shadow-lg border-0 p-4 text-center">
+                <div class="icon-wrapper mb-3 text-warning">
+                    <i class="bi bi-building"></i>
                 </div>
-                <div class="mt-3 text-end">
-                    <a href="{% url 'admin_school_info' %}" class="btn btn-sm btn-outline-warning">Tahrirlash</a>
-                </div>
+                <h5 class="fw-semibold mb-2">Maktab</h5>
+                <p class="text-muted mb-3">Maktab ma'lumotlarini tahrirlash</p>
+                <a href="{% url 'admin_school_info' %}" class="btn btn-warning btn-sm">Tahrirlash</a>
             </div>
         </div>
 
@@ -62,29 +47,54 @@
 
 <style>
     body {
-        background-color: #f8f9fa;
-        font-family: "Segoe UI", Roboto, sans-serif;
+        background: #f1f3f5;
+        font-family: 'Segoe UI', Roboto, sans-serif;
     }
 
     .hover-card {
-        border-radius: 0.5rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-        background-color: #fff;
+        border-radius: 1rem;
+        transition: transform 0.3s, box-shadow 0.3s;
+        background: #fff;
     }
 
-    h3 {
+    .hover-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .hover-card .icon-wrapper {
+        font-size: 3rem;
+        color: #667eea;
+        transition: transform 0.3s;
+    }
+
+    .hover-card:hover .icon-wrapper {
+        transform: rotate(10deg) scale(1.1);
+    }
+
+    h5 {
         font-weight: 600;
+        color: #333;
     }
 
-    h6 {
-        font-weight: 500;
+    p {
+        font-size: 0.9rem;
         color: #6c757d;
     }
 
-    .btn-outline-primary,
-    .btn-outline-success,
-    .btn-outline-warning {
-        font-size: 0.85rem;
+    .btn-primary,
+    .btn-success,
+    .btn-warning {
+        border-radius: 0.75rem;
+        font-weight: 600;
+        padding: 0.5rem 1.2rem;
+        transition: transform 0.2s;
+    }
+
+    .btn-primary:hover,
+    .btn-success:hover,
+    .btn-warning:hover {
+        transform: translateY(-2px);
     }
 </style>
 {% endblock %}

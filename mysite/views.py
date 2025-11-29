@@ -6,229 +6,215 @@ from .forms import SchoolInfoForm, TeacherForm, NewsForm
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.db.models import Case, When, Value, IntegerField
+from config import ADMIN_PASSWORD
 
-default_categories = ["Rahbariyat", "Maktab direktori", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
+# -------------------------
+# Вход в админку
+# -------------------------
+def admin_login(request):
+    if request.session.get('admin_logged'):
+        return redirect('admin_dashboard')
 
-for cat_name in default_categories:
-    Category.objects.get_or_create(name=cat_name)
+    if request.method == "POST":
+        if request.POST.get("password") == ADMIN_PASSWORD:
+            request.session['admin_logged'] = True
+            return redirect('admin_dashboard')
+        return render(request, "admin_panel/login.html", {"error": "Неправильный пароль"})
 
-def send_contact(request):
-    if request.method == "POST": 
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        message = request.POST.get("message")
+    return render(request, "admin_panel/login.html")
 
-        full_message = f"Ism: {name}\nEmail: {email}\nXabar:\n{message}"
 
-        send_mail(
-            subject="Sahifadan yangi kontakt",
-            message=full_message,
-            from_email=email,
-            recipient_list=["proectest@gmail.com"],
-        )
+# -------------------------
+# Декоратор проверки админа
+# -------------------------
+def admin_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('admin_logged'):
+            return redirect('admin_login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
-        return JsonResponse({"status": "ok"})
-    
-    return JsonResponse({"status": "error"}, status=400)
-from django.db.models import Q
 
+@admin_required
+def admin_panel_redirect(request):
+    return redirect('admin_dashboard')
+
+# -------------------------
+# Главная страница сайта
+# -------------------------
 class HomeView(TemplateView):
     template_name = 'index.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.session.get('admin_logged'):
+            request.session.flush()
+        
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         priority_categories = ["Rahbariyat", "Maktab direktori"]
-
-        teachers = list(
-            Teacher.objects.filter(category__name__in=priority_categories)[:4]
-        )
-
+        teachers = list(Teacher.objects.filter(category__name__in=priority_categories)[:4])
         remaining = 4 - len(teachers)
         if remaining > 0:
             other_teachers = Teacher.objects.exclude(id__in=[t.id for t in teachers])[:remaining]
             teachers.extend(other_teachers)
-
         context['teachers'] = teachers
         context['news'] = News.objects.order_by('-created_at')[:3]
         context['info'] = SchoolInfo.objects.first()
         return context
 
 
+# -------------------------
+# Контактная форма
+# -------------------------
+def send_contact(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        message = request.POST.get("message")
+        full_message = f"Ism: {name}\nEmail: {email}\nXabar:\n{message}"
+        send_mail(
+            subject="Sahifadan yangi kontakt",
+            message=full_message,
+            from_email=email,
+            recipient_list=["proectest@gmail.com"],
+        )
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "error"}, status=400)
+
+
+# -------------------------
+# Новости
+# -------------------------
+def news_view(request):
+    news = News.objects.all()
+    return render(request, 'news.html', {'news': news})
+
+
 def news_detail(request, pk):
     news = News.objects.filter(id=pk).first()
-    print(news)
     recent_news = News.objects.all()
-
-    data = {
-        'news': news,
-        'recent_news': recent_news,
-    }
-    return render(request, 'detail.html', context=data)
+    return render(request, 'detail.html', {'news': news, 'recent_news': recent_news})
 
 
+# -------------------------
+# Учителя
+# -------------------------
+def teachers_view(request):
+    CATEGORY_ORDER = ["Maktab direktori", "Rahbariyat", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
+    cases = [When(name=name, then=Value(i)) for i, name in enumerate(CATEGORY_ORDER)]
+    categories = Category.objects.annotate(
+        custom_order=Case(*cases, default=Value(999), output_field=IntegerField())
+    ).prefetch_related('teachers').order_by('custom_order')
+    grouped = [{'category': c, 'teachers': c.teachers.all()} for c in categories if c.teachers.exists()]
+    return render(request, 'teachers_list.html', {'teachers_grouped': grouped})
+
+
+# -------------------------
+# Админка
+# -------------------------
+@admin_required
 def admin_dashboard(request):
-    teachers_count = Teacher.objects.count()
-    news_count = News.objects.count()
-    info = SchoolInfo.objects.first()
     return render(request, 'admin_panel/dashboard.html', {
-        'teachers_count': teachers_count,
-        'news_count': news_count,
-        'info': info
+        'teachers_count': Teacher.objects.count(),
+        'news_count': News.objects.count(),
+        'info': SchoolInfo.objects.first()
     })
 
+
+@admin_required
 def admin_school_info(request):
-    info = SchoolInfo.objects.first()
-    if not info:
-        info = SchoolInfo.objects.create()
+    info = SchoolInfo.objects.first() or SchoolInfo.objects.create()
     if request.method == 'POST':
         form = SchoolInfoForm(request.POST, instance=info)
         if form.is_valid():
             form.save()
-            messages.success(request, "Maktab ma'lumotlari saqlandi!")
+            messages.success(request, "Сохранено!")
             return redirect('admin_dashboard')
     else:
         form = SchoolInfoForm(instance=info)
     return render(request, 'admin_panel/school_info.html', {'form': form})
 
+
+@admin_required
 def admin_teachers(request):
-    teachers = Teacher.objects.select_related('category').all()
-    form = TeacherForm()
-    categories = Category.objects.all()  # Добавляем категории
     return render(request, 'admin_panel/teachers.html', {
-        'teachers': teachers,
-        'form': form,
-        'categories': categories,
+        'teachers': Teacher.objects.select_related('category').all(),
+        'form': TeacherForm(),
+        'categories': Category.objects.all(),
     })
 
-# def admin_categories(request):
-#     category = Category.objects.all() 
-#     form = CategoryForm()
-#     return render(request, 'admin_panel/category.html', {'category': category, 'form': form})
 
+@admin_required
 def admin_add_teacher(request):
-    teachers = Teacher.objects.select_related('category').all()
-    categories = Category.objects.all()
-
     if request.method == 'POST':
         form = TeacherForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, "O'qituvchi qo'shildi!")
-            return redirect('admin_teachers')
-        else:
-            return render(request, 'admin_panel/teachers.html', {
-                'teachers': teachers,
-                'form': form,
-                'categories': categories,
-            })
-
     return redirect('admin_teachers')
 
 
+@admin_required
 def admin_edit_teacher(request, teacher_id):
-    teacher = Teacher.objects.filter(id=teacher_id).first()
-    if not teacher:
+    t = Teacher.objects.filter(id=teacher_id).first()
+    if not t: 
         return redirect('admin_teachers')
-    
     if request.method == 'POST':
-        form = TeacherForm(request.POST, request.FILES, instance=teacher)
+        form = TeacherForm(request.POST, request.FILES, instance=t)
         if form.is_valid():
             form.save()
-            messages.success(request, "O'qituvchi muvaffaqiyatli yangilandi!")
             return redirect('admin_teachers')
     else:
-        form = TeacherForm(instance=teacher)
+        form = TeacherForm(instance=t)
+    return render(request, 'admin_panel/edit_teacher.html', {'form': form, 'teacher': t})
 
-    return render(request, 'admin_panel/edit_teacher.html', {'form': form, 'teacher': teacher})
+
+@admin_required
+def admin_delete_teacher(request, teacher_id):
+    t = Teacher.objects.filter(id=teacher_id).first()
+    if t: t.delete()
+    return redirect('admin_teachers')
 
 
-def admin_edit_news(request, news_id):
-    news = News.objects.filter(id=news_id).first()
-    if not news:
-        return redirect('admin_news')
-    
-    if request.method == 'POST':
-        form = NewsForm(request.POST, request.FILES, instance=news)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Yangilik muvaffaqiyatli yangilandi!")
-            return redirect('admin_news')
-    else:
-        form = NewsForm(instance=news)
-
-    return render(request, 'admin_panel/edit_news.html', {'form': form, 'news': news})
-
-# def admin_add_category(request):
-#     if request.method == 'POST':
-#         form = CategoryForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Категория добавлена!")
-#             return redirect('admin_categories')
-#     return redirect('admin_categories')
-
+@admin_required
 def admin_news(request):
-    news_list = News.objects.all()
-    form = NewsForm()
-    return render(request, 'admin_panel/news.html', {'news_list': news_list, 'form': form})
+    return render(request, 'admin_panel/news.html', {
+        'news_list': News.objects.all(),
+        'form': NewsForm(),
+    })
 
+
+@admin_required
 def admin_add_news(request):
     if request.method == 'POST':
         form = NewsForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, "Yangiliklar qo'shildi!")
+    return redirect('admin_news')
+
+
+@admin_required
+def admin_edit_news(request, news_id):
+    n = News.objects.filter(id=news_id).first()
+    if not n: return redirect('admin_news')
+    if request.method == 'POST':
+        form = NewsForm(request.POST, request.FILES, instance=n)
+        if form.is_valid():
+            form.save()
             return redirect('admin_news')
-    return redirect('admin_news')
-
-def news_view(request):
-    news = News.objects.all()
-    return render(request, 'news.html', {
-        'news': news,
-    })
-
-def teachers_view(request):
-    CATEGORY_ORDER = ["Maktab direktori", "Rahbariyat", "Fan o'qituvchisi", "Boshlang'ich sinf o'qituvchisi"]
-
-    cases = [When(name=name, then=Value(index)) for index, name in enumerate(CATEGORY_ORDER)]
-    categories = Category.objects.annotate(
-        custom_order=Case(
-            *cases,
-            default=Value(999),
-            output_field=IntegerField()
-        )
-    ).prefetch_related('teachers').order_by('custom_order')
-
-    teachers_grouped = []
-    for category in categories:
-        teachers_in_category = category.teachers.all()
-        if teachers_in_category.exists():
-            teachers_grouped.append({
-                'category': category,
-                'teachers': teachers_in_category
-            })
-
-    return render(request, 'teachers_list.html', {
-        'teachers_grouped': teachers_grouped,
-    })
+    else:
+        form = NewsForm(instance=n)
+    return render(request, 'admin_panel/edit_news.html', {'form': form, 'news': n})
 
 
-
-def admin_delete_teacher(request, teacher_id):
-    teacher = Teacher.objects.filter(id=teacher_id).first()
-    if teacher:
-        teacher.delete()
-    return redirect('admin_teachers')
-
+@admin_required
 def admin_delete_news(request, news_id):
-    news = News.objects.filter(id=news_id).first()
-    if news:
-        news.delete()
+    n = News.objects.filter(id=news_id).first()
+    if n: n.delete()
     return redirect('admin_news')
 
-# def admin_delete_category(request, category_id):
-#     category = Category.objects.filter(id=category_id).first()
-#     if category:
-#         category.delete()
-#     return redirect('admin_categories')
+def admin_logout(request):
+    request.session.flush()
+    request.session.clear_expired()
+    return redirect('admin_login')
